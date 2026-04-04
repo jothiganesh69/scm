@@ -1,0 +1,24 @@
+[
+  {
+    "expression": "25698/3++",
+    "result": "Error",
+    "time": "2026-04-04T17:46:58.892Z"
+  },
+  {
+    "expression": "Error3.",
+    "result": "Error",
+    "time": "2026-04-04T17:47:02.190Z"
+  },
+  {
+    "expression": "Error9/55..",
+    "result": "Error",
+    "time": "2026-04-04T17:47:05.022Z"
+  },
+  {
+    "expression": "Error",
+    "time": "2026-04-04T17:47:05.325Z"
+  },
+  {
+    "time": "2026-04-04T17:47:05.722Z"
+  }
+]

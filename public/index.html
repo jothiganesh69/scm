@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Calculator</title>
+
+<style>
+body {
+    background: #000;
+    font-family: Arial;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.container {
+    background: #1c1c1c;
+    padding: 20px;
+    border-radius: 20px;
+    width: 260px;
+}
+
+.display {
+    height: 60px;
+    background: black;
+    color: white;
+    font-size: 28px;
+    text-align: right;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+button {
+    height: 50px;
+}
+
+#history {
+    color: white;
+    margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+    <h2 style="color:white;">Login</h2>
+    <input id="username" type="text"placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+</div>
+
+<!-- CALCULATOR -->
+<div id="calculator" style="display:none;">
+    <div class="container">
+        <div class="display" id="display">0</div>
+
+        <div class="buttons">
+            <button onclick="append('7')">7</button>
+            <button onclick="append('8')">8</button>
+            <button onclick="append('9')">9</button>
+            <button onclick="append('/')">/</button>
+
+            <button onclick="append('4')">4</button>
+            <button onclick="append('5')">5</button>
+            <button onclick="append('6')">6</button>
+            <button onclick="append('*')">*</button>
+
+            <button onclick="append('1')">1</button>
+            <button onclick="append('2')">2</button>
+            <button onclick="append('3')">3</button>
+            <button onclick="append('-')">-</button>
+
+            <button onclick="append('0')">0</button>
+            <button onclick="append('.')">.</button>
+            <button onclick="calculate()">=</button>
+            <button onclick="append('+')">+</button>
+        </div>
+    </div>
+
+    <h3>History</h3>
+    <ul id="history"></ul>
+</div>
+
+<script>
+
+let expression = "";
+
+// LOGIN
+async function login() {
+    let user = document.getElementById("username").value;
+    let pass = document.getElementById("password").value;
+
+    let res = await fetch("/login", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ username: user, password: pass })
+    });
+
+    if (res.ok) {
+        document.getElementById("login").style.display = "none";
+        document.getElementById("calculator").style.display = "block";
+        loadHistory();
+    } else {
+        alert("Invalid Login");
+    }
+}
+
+function append(val) {
+    expression += val;
+    display.innerText = expression;
+}
+
+// DIGITAL TWIN
+function digitalTwin(exp) {
+    try { return eval(exp); } catch { return "Error"; }
+}
+
+// ACTUAL
+function actualSystem(exp) {
+    try { return eval(exp); } catch { return "Error"; }
+}
+
+// CALCULATE
+async function calculate() {
+    let res = await fetch("/calculate", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ expression })
+    });
+
+    let data = await res.json();
+
+    expression = data.result;
+    display.innerText = expression;
+
+    loadHistory();
+}
+
+// LOAD HISTORY
+async function loadHistory() {
+    let res = await fetch("/history");
+    let data = await res.json();
+
+    history.innerHTML = "";
+
+    data.reverse().forEach(item => {
+        let li = document.createElement("li");
+        li.innerText = item.expression + " = " + item.result;
+        history.appendChild(li);
+    });
+}
+
+</script>
+
+</body>
+</html>
