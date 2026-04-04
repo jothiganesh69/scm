@@ -40,7 +40,6 @@ app.post('/calculate', (req, res) => {
         return res.status(400).json({ status: "Rejected" });
     }
 
-    // Read DB
     let db = JSON.parse(fs.readFileSync('db.json'));
 
     db.push({
