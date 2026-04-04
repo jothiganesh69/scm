@@ -1,158 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Smart Calculator</title>
-
-<style>
-body {
-    background: #000;
-    font-family: Arial;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.container {
-    background: #1c1c1c;
-    padding: 20px;
-    border-radius: 20px;
-    width: 260px;
-}
-
-.display {
-    height: 60px;
-    background: black;
-    color: white;
-    font-size: 28px;
-    text-align: right;
-    padding: 10px;
-    margin-bottom: 15px;
-}
-
-.buttons {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-}
-
-button {
-    height: 50px;
-    font-size: 16px;
-}
-
-#history {
-    color: white;
-}
-</style>
+<title>Calculator V2</title>
 </head>
-
 <body>
 
-<!-- LOGIN -->
 <div id="login">
-    <h2 style="color:white;">Login</h2>
-    <input id="username" type="text" placeholder="Username"><br><br>
-    <input id="password" type="password" placeholder="Password"><br><br>
-    <button onclick="login()">Login</button>
+<h2>Login</h2>
+<input id="user" placeholder="Username"><br>
+<input id="pass" type="password" placeholder="Password"><br>
+<button onclick="login()">Login</button>
 </div>
 
-<!-- CALCULATOR -->
-<div id="calculator" style="display:none;">
-    <div class="container">
-        <div class="display" id="display">0</div>
+<div id="app" style="display:none;">
+<h2>Calculator</h2>
+<input id="display" readonly><br><br>
 
-        <div class="buttons">
-            <button onclick="append('7')">7</button>
-            <button onclick="append('8')">8</button>
-            <button onclick="append('9')">9</button>
-            <button onclick="append('/')">/</button>
-
-            <button onclick="append('4')">4</button>
-            <button onclick="append('5')">5</button>
-            <button onclick="append('6')">6</button>
-            <button onclick="append('*')">*</button>
-
-            <button onclick="append('1')">1</button>
-            <button onclick="append('2')">2</button>
-            <button onclick="append('3')">3</button>
-            <button onclick="append('-')">-</button>
-
-            <button onclick="append('0')">0</button>
-            <button onclick="append('.')">.</button>
-            <button onclick="calculate()">=</button>
-            <button onclick="append('+')">+</button>
-        </div>
-
-        <br>
-        <button onclick="loadHistory()">Show History</button>
-
-        <h3 style="color:white;">History</h3>
-        <ul id="history"></ul>
-    </div>
+<button onclick="append('1')">1</button>
+<button onclick="append('2')">2</button>
+<button onclick="append('+')">+</button>
+<button onclick="calculate()">=</button>
 </div>
 
 <script>
-
-let expression = "";
-
-// LOGIN
-async function login() {
-    let user = document.getElementById("username").value;
-    let pass = document.getElementById("password").value;
-
-    let res = await fetch("/login", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ username: user, password: pass })
-    });
-
-    if (res.ok) {
-        document.getElementById("login").style.display = "none";
-        document.getElementById("calculator").style.display = "block";
-        loadHistory();
+function login(){
+    if(user.value==="user1" && pass.value==="user123"){
+        login.style.display="none";
+        app.style.display="block";
     } else {
-        alert("Invalid Login");
+        alert("Invalid");
     }
 }
 
-// APPEND INPUT
-function append(val) {
-    expression += val;
-    document.getElementById("display").innerText = expression;
+let exp="";
+
+function append(val){
+    exp+=val;
+    display.value=exp;
 }
 
-// CALCULATE
-async function calculate() {
-    let res = await fetch("/calculate", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ expression })
-    });
-
-    let data = await res.json();
-
-    expression = data.result;
-    document.getElementById("display").innerText = expression;
-
-    loadHistory();
+function calculate(){
+    display.value=eval(exp);
 }
-
-// LOAD HISTORY
-async function loadHistory() {
-    let res = await fetch("/history");
-    let data = await res.json();
-
-    let list = document.getElementById("history");
-    list.innerHTML = "";
-
-    data.reverse().forEach(item => {
-        let li = document.createElement("li");
-        li.innerText = item.expression + " = " + item.result;
-        list.appendChild(li);
-    });
-}
-
 </script>
 
 </body>
