@@ -1,47 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Calculator V2</title>
+<title>Calculator V1</title>
 </head>
 <body>
 
-<div id="login">
-<h2>Login</h2>
-<input id="user" placeholder="Username"><br>
-<input id="pass" type="password" placeholder="Password"><br>
-<button onclick="login()">Login</button>
-</div>
+<h2>Calculator (Core Logic)</h2>
 
-<div id="app" style="display:none;">
-<h2>Calculator</h2>
-<input id="display" readonly><br><br>
+<input type="text" id="display" placeholder="Enter expression">
 
-<button onclick="append('1')">1</button>
-<button onclick="append('2')">2</button>
-<button onclick="append('+')">+</button>
-<button onclick="calculate()">=</button>
-</div>
+<br><br>
+
+<button onclick="calculate()">Calculate</button>
+
+<p id="result"></p>
 
 <script>
-function login(){
-    if(user.value==="user1" && pass.value==="user123"){
-        login.style.display="none";
-        app.style.display="block";
-    } else {
-        alert("Invalid");
+
+// CORE CALCULATION FUNCTION
+function calculate() {
+    let expression = document.getElementById("display").value;
+
+    try {
+        let result = eval(expression);
+        document.getElementById("result").innerText = "Result: " + result;
+    } catch {
+        document.getElementById("result").innerText = "Invalid Expression";
     }
 }
 
-let exp="";
-
-function append(val){
-    exp+=val;
-    display.value=exp;
-}
-
-function calculate(){
-    display.value=eval(exp);
-}
 </script>
 
 </body>
