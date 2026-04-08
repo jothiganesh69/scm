@@ -1,29 +1,20 @@
-// DIGITAL TWIN TEST
+function test(expression, expected) {
+    let result = eval(expression);
 
-function digitalTwin(expression) {
-    return eval(expression);
-}
-
-function actualSystem(expression) {
-    return eval(expression);
-}
-
-// Test cases
-let tests = [
-    "1+2",
-    "5*3",
-    "10/2",
-    "8-3"
-];
-
-for (let exp of tests) {
-    let predicted = digitalTwin(exp);
-    let actual = actualSystem(exp);
-
-    if (predicted !== actual) {
-        console.log("Test Failed:", exp);
-        process.exit(1);
+    if (result === expected) {
+        console.log(`✅ PASS: ${expression} = ${result}`);
+    } else {
+        console.log(`❌ FAIL: ${expression} → Expected ${expected}, Got ${result}`);
     }
 }
 
-console.log("All Tests Passed");
+console.log("Running Digital Twin Test Cases...\n");
+
+// Test cases
+test("1+2", 3);
+test("5*3", 15);
+test("10/2", 5);
+test("8-3", 5);
+test("2+3*4", 14);
+
+console.log("\nAll Tests Completed");
