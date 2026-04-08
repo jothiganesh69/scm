@@ -13,7 +13,6 @@ body {
     align-items: center;
 }
 
-/* Calculator */
 .container {
     background: #1c1c1c;
     padding: 20px;
@@ -40,21 +39,13 @@ body {
 
 button {
     height: 50px;
-    font-size: 16px;
 }
 
 .num { background: #333; color: white; }
 .op { background: orange; color: white; }
 .special { background: #a5a5a5; }
 
-/* Login */
-#login {
-    margin-top: 100px;
-}
-
-/* History */
 #historyBox {
-    margin-top: 20px;
     color: white;
 }
 </style>
@@ -63,11 +54,11 @@ button {
 <body>
 
 <!-- LOGIN -->
-<div id="login">
+<div id="loginBox">
     <h2 style="color:white;">Login</h2>
     <input id="username" placeholder="Username"><br><br>
     <input id="password" type="password" placeholder="Password"><br><br>
-    <button onclick="login()">Login</button>
+    <button onclick="loginUser()">Login</button>
     <p id="msg"></p>
 </div>
 
@@ -116,60 +107,55 @@ button {
 
 <script>
 
-// LOGIN
-function login() {
-    let user = username.value;
-    let pass = password.value;
+// FIXED LOGIN FUNCTION
+function loginUser() {
+    let user = document.getElementById("username").value;
+    let pass = document.getElementById("password").value;
 
     if (user === "user1" && pass === "user123") {
-        login.style.display = "none";
-        calculator.style.display = "block";
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("calculator").style.display = "block";
     } else {
-        msg.innerText = "Invalid Credentials";
+        document.getElementById("msg").innerText = "Invalid Credentials";
     }
 }
 
-// CALCULATOR LOGIC
+// CALCULATOR
 let expression = "";
 let historyArr = [];
 
-// INPUT
 function append(value) {
     if (expression === "0") expression = "";
     expression += value;
     updateDisplay();
 }
 
-// CLEAR
 function clearDisplay() {
     expression = "";
     updateDisplay();
 }
 
-// DELETE
 function deleteLast() {
     expression = expression.slice(0, -1);
     updateDisplay();
 }
 
-// UPDATE DISPLAY
 function updateDisplay() {
-    display.innerText = expression || "0";
+    document.getElementById("display").innerText = expression || "0";
 }
 
-// CALCULATE + SAVE HISTORY
+// CALCULATE
 function calculate() {
     try {
         let result = eval(expression);
 
-        // SAVE TO HISTORY
         historyArr.push(expression + " = " + result);
 
         expression = result.toString();
         updateDisplay();
 
     } catch {
-        display.innerText = "Error";
+        document.getElementById("display").innerText = "Error";
     }
 }
 
