@@ -1,173 +1,104 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Calculator V3</title>
-
-<style>
-body {
-    background: #000;
-    font-family: Arial;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.container {
-    background: #1c1c1c;
-    padding: 20px;
-    border-radius: 20px;
-    width: 260px;
-    margin-top: 50px;
-}
-
-.display {
-    height: 60px;
-    background: black;
-    color: white;
-    font-size: 28px;
-    text-align: right;
-    padding: 10px;
-    margin-bottom: 15px;
-}
-
-.buttons {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-}
-
-button {
-    height: 50px;
-}
-
-.num { background: #333; color: white; }
-.op { background: orange; color: white; }
-.special { background: #a5a5a5; }
-
-#historyBox {
-    color: white;
-}
-</style>
-</head>
-
+<html>
 <body>
 
-<!-- LOGIN -->
 <div id="loginBox">
-    <h2 style="color:white;">Login</h2>
-    <input id="username" placeholder="Username"><br><br>
-    <input id="password" type="password" placeholder="Password"><br><br>
-    <button onclick="loginUser()">Login</button>
-    <p id="msg"></p>
+<input id="username" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
+<button onclick="loginUser()">Login</button>
 </div>
 
-<!-- CALCULATOR -->
-<div id="calculator" style="display:none;">
-    <div class="container">
+<div id="app" style="display:none;">
+<input id="display"><br>
 
-        <div class="display" id="display">0</div>
+<button onclick="append('3')">3</button>
+<button onclick="append('+')">+</button>
+<button onclick="append('4')">4</button>
+<button onclick="calculate()">=</button>
 
-        <div class="buttons">
-            <button class="special" onclick="clearDisplay()">C</button>
-            <button class="special" onclick="deleteLast()">⌫</button>
-            <button class="op" onclick="append('%')">%</button>
-            <button class="op" onclick="append('/')">÷</button>
+<br><br>
 
-            <button class="num" onclick="append('7')">7</button>
-            <button class="num" onclick="append('8')">8</button>
-            <button class="num" onclick="append('9')">9</button>
-            <button class="op" onclick="append('*')">×</button>
+<button onclick="toggleHistory()">History</button>
 
-            <button class="num" onclick="append('4')">4</button>
-            <button class="num" onclick="append('5')">5</button>
-            <button class="num" onclick="append('6')">6</button>
-            <button class="op" onclick="append('-')">−</button>
+<div id="historyBox" style="display:none;">
+    <ul id="history"></ul>
+</div>
 
-            <button class="num" onclick="append('1')">1</button>
-            <button class="num" onclick="append('2')">2</button>
-            <button class="num" onclick="append('3')">3</button>
-            <button class="op" onclick="append('+')">+</button>
-
-            <button class="num" onclick="append('0')">0</button>
-            <button class="num" onclick="append('.')">.</button>
-            <button class="op" style="grid-column: span 2;" onclick="calculate()">=</button>
-        </div>
-
-        <br>
-        <button onclick="showHistory()">Show History</button>
-
-        <div id="historyBox">
-            <h3>History</h3>
-            <ul id="history"></ul>
-        </div>
-
-    </div>
 </div>
 
 <script>
 
-// FIXED LOGIN FUNCTION
-function loginUser() {
-    let user = document.getElementById("username").value;
-    let pass = document.getElementById("password").value;
+let exp = "";
+let historyVisible = false;
 
-    if (user === "user1" && pass === "user123") {
-        document.getElementById("loginBox").style.display = "none";
-        document.getElementById("calculator").style.display = "block";
+// LOGIN
+async function loginUser() {
+    let res = await fetch('/login', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+            username: username.value,
+            password: password.value
+        })
+    });
+
+    if (res.ok) {
+        loginBox.style.display = "none";
+        app.style.display = "block";
     } else {
-        document.getElementById("msg").innerText = "Invalid Credentials";
+        alert("Invalid Login");
     }
 }
 
-// CALCULATOR
-let expression = "";
-let historyArr = [];
-
-function append(value) {
-    if (expression === "0") expression = "";
-    expression += value;
-    updateDisplay();
-}
-
-function clearDisplay() {
-    expression = "";
-    updateDisplay();
-}
-
-function deleteLast() {
-    expression = expression.slice(0, -1);
-    updateDisplay();
-}
-
-function updateDisplay() {
-    document.getElementById("display").innerText = expression || "0";
+// INPUT
+function append(v){
+    exp += v;
+    display.value = exp;
 }
 
 // CALCULATE
-function calculate() {
-    try {
-        let result = eval(expression);
+async function calculate(){
+    let res = await fetch('/calculate',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({expression: exp})
+    });
 
-        historyArr.push(expression + " = " + result);
+    let data = await res.json();
 
-        expression = result.toString();
-        updateDisplay();
+    display.value = data.result;
 
-    } catch {
-        document.getElementById("display").innerText = "Error";
+    // Auto refresh history if visible
+    if(historyVisible){
+        loadHistory();
     }
 }
 
-// SHOW HISTORY
-function showHistory() {
-    let list = document.getElementById("history");
-    list.innerHTML = "";
+// TOGGLE HISTORY
+function toggleHistory(){
+    let box = document.getElementById("historyBox");
 
-    historyArr.slice().reverse().forEach(item => {
+    historyVisible = !historyVisible;
+
+    if(historyVisible){
+        box.style.display = "block";
+        loadHistory();
+    } else {
+        box.style.display = "none";
+    }
+}
+
+// LOAD HISTORY
+async function loadHistory(){
+    let res = await fetch('/history');
+    let data = await res.json();
+
+    history.innerHTML = "";
+
+    data.slice().reverse().forEach(item=>{
         let li = document.createElement("li");
-        li.innerText = item;
-        list.appendChild(li);
+        li.innerText = item.expression + " = " + item.result;
+        history.appendChild(li);
     });
 }
 
