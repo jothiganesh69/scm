@@ -1,34 +1,125 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Calculator</title>
+
+<style>
+body {
+    background: #000;
+    font-family: Arial;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Calculator */
+.container {
+    background: #1c1c1c;
+    padding: 20px;
+    border-radius: 20px;
+    width: 260px;
+    margin-top: 50px;
+}
+
+.display {
+    height: 60px;
+    background: black;
+    color: white;
+    font-size: 28px;
+    text-align: right;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+button {
+    height: 50px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.num { background: #333; color: white; }
+.op { background: orange; color: white; }
+.special { background: #a5a5a5; }
+
+/* Login */
+#loginBox {
+    margin-top: 100px;
+}
+
+/* History */
+#historyBox {
+    display: none;
+    color: white;
+    margin-top: 10px;
+}
+</style>
+</head>
+
 <body>
 
+<!-- LOGIN -->
 <div id="loginBox">
-<input id="username" placeholder="Username">
-<input id="password" type="password" placeholder="Password">
-<button onclick="loginUser()">Login</button>
+    <h2 style="color:white;">Login</h2>
+    <input id="username" placeholder="Username"><br><br>
+    <input id="password" type="password" placeholder="Password"><br><br>
+    <button onclick="loginUser()">Login</button>
 </div>
 
+<!-- CALCULATOR -->
 <div id="app" style="display:none;">
-<input id="display"><br>
+    <div class="container">
 
-<button onclick="append('3')">3</button>
-<button onclick="append('+')">+</button>
-<button onclick="append('4')">4</button>
-<button onclick="calculate()">=</button>
+        <div class="display" id="display">0</div>
 
-<br><br>
+        <div class="buttons">
+            <button class="special" onclick="clearDisplay()">C</button>
+            <button class="special" onclick="deleteLast()">⌫</button>
+            <button class="op" onclick="append('%')">%</button>
+            <button class="op" onclick="append('/')">÷</button>
 
-<button onclick="toggleHistory()">History</button>
+            <button class="num" onclick="append('7')">7</button>
+            <button class="num" onclick="append('8')">8</button>
+            <button class="num" onclick="append('9')">9</button>
+            <button class="op" onclick="append('*')">×</button>
 
-<div id="historyBox" style="display:none;">
-    <ul id="history"></ul>
-</div>
+            <button class="num" onclick="append('4')">4</button>
+            <button class="num" onclick="append('5')">5</button>
+            <button class="num" onclick="append('6')">6</button>
+            <button class="op" onclick="append('-')">−</button>
 
+            <button class="num" onclick="append('1')">1</button>
+            <button class="num" onclick="append('2')">2</button>
+            <button class="num" onclick="append('3')">3</button>
+            <button class="op" onclick="append('+')">+</button>
+
+            <button class="num" onclick="append('0')">0</button>
+            <button class="num" onclick="append('.')">.</button>
+            <button class="op" style="grid-column: span 2;" onclick="calculate()">=</button>
+        </div>
+
+        <br>
+        <button onclick="toggleHistory()">History</button>
+
+        <div id="historyBox">
+            <h3>History</h3>
+            <ul id="history"></ul>
+        </div>
+
+    </div>
 </div>
 
 <script>
 
-let exp = "";
+let expression = "";
 let historyVisible = false;
 
 // LOGIN
@@ -43,44 +134,65 @@ async function loginUser() {
     });
 
     if (res.ok) {
-        loginBox.style.display = "none";
-        app.style.display = "block";
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("app").style.display = "block";
     } else {
         alert("Invalid Login");
     }
 }
 
 // INPUT
-function append(v){
-    exp += v;
-    display.value = exp;
+function append(value) {
+    if (expression === "0") expression = "";
+    expression += value;
+    updateDisplay();
+}
+
+// CLEAR
+function clearDisplay() {
+    expression = "";
+    updateDisplay();
+}
+
+// DELETE
+function deleteLast() {
+    expression = expression.slice(0, -1);
+    updateDisplay();
+}
+
+// DISPLAY
+function updateDisplay() {
+    document.getElementById("display").innerText = expression || "0";
 }
 
 // CALCULATE
-async function calculate(){
-    let res = await fetch('/calculate',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({expression: exp})
+async function calculate() {
+    let res = await fetch('/calculate', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ expression })
     });
 
     let data = await res.json();
 
-    display.value = data.result;
-
-    // Auto refresh history if visible
-    if(historyVisible){
-        loadHistory();
+    if (data.status === "Rejected") {
+        document.getElementById("display").innerText = "Rejected";
+        return;
     }
+
+    expression = data.result.toString();
+    updateDisplay();
+
+    if (historyVisible) loadHistory();
 }
 
 // TOGGLE HISTORY
-function toggleHistory(){
+function toggleHistory() {
     let box = document.getElementById("historyBox");
 
     historyVisible = !historyVisible;
 
-    if(historyVisible){
+    if (historyVisible) {
         box.style.display = "block";
         loadHistory();
     } else {
@@ -89,16 +201,17 @@ function toggleHistory(){
 }
 
 // LOAD HISTORY
-async function loadHistory(){
+async function loadHistory() {
     let res = await fetch('/history');
     let data = await res.json();
 
-    history.innerHTML = "";
+    let list = document.getElementById("history");
+    list.innerHTML = "";
 
-    data.slice().reverse().forEach(item=>{
+    data.slice().reverse().forEach(item => {
         let li = document.createElement("li");
         li.innerText = item.expression + " = " + item.result;
-        history.appendChild(li);
+        list.appendChild(li);
     });
 }
 
