@@ -3,12 +3,6 @@ pipeline {
 
     stages {
 
-        stage('Clone Repository') {
-            steps {
-                git 'https://github.com/jothiganesh69/scm.git'
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
@@ -23,13 +17,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo 'Build Successful'
+                echo 'Build successful'
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Deploying Application...'
+                echo 'Deployment successful'
             }
         }
     }
