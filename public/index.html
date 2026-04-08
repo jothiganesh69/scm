@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Smart Calculator</title>
+<title>Calculator V3</title>
 
 <style>
 body {
@@ -13,7 +13,6 @@ body {
     align-items: center;
 }
 
-/* Calculator */
 .container {
     background: #1c1c1c;
     padding: 20px;
@@ -40,26 +39,14 @@ body {
 
 button {
     height: 50px;
-    font-size: 16px;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
 }
 
 .num { background: #333; color: white; }
 .op { background: orange; color: white; }
 .special { background: #a5a5a5; }
 
-/* Login */
-#loginBox {
-    margin-top: 100px;
-}
-
-/* History */
 #historyBox {
-    display: none;
     color: white;
-    margin-top: 10px;
 }
 </style>
 </head>
@@ -72,10 +59,11 @@ button {
     <input id="username" placeholder="Username"><br><br>
     <input id="password" type="password" placeholder="Password"><br><br>
     <button onclick="loginUser()">Login</button>
+    <p id="msg"></p>
 </div>
 
 <!-- CALCULATOR -->
-<div id="app" style="display:none;">
+<div id="calculator" style="display:none;">
     <div class="container">
 
         <div class="display" id="display">0</div>
@@ -107,7 +95,7 @@ button {
         </div>
 
         <br>
-        <button onclick="toggleHistory()">History</button>
+        <button onclick="showHistory()">Show History</button>
 
         <div id="historyBox">
             <h3>History</h3>
@@ -119,98 +107,66 @@ button {
 
 <script>
 
-let expression = "";
-let historyVisible = false;
+// FIXED LOGIN FUNCTION
+function loginUser() {
+    let user = document.getElementById("username").value;
+    let pass = document.getElementById("password").value;
 
-// LOGIN
-async function loginUser() {
-    let res = await fetch('/login', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({
-            username: username.value,
-            password: password.value
-        })
-    });
-
-    if (res.ok) {
+    if (user === "user1" && pass === "user123") {
         document.getElementById("loginBox").style.display = "none";
-        document.getElementById("app").style.display = "block";
+        document.getElementById("calculator").style.display = "block";
     } else {
-        alert("Invalid Login");
+        document.getElementById("msg").innerText = "Invalid Credentials";
     }
 }
 
-// INPUT
+// CALCULATOR
+let expression = "";
+let historyArr = [];
+
 function append(value) {
     if (expression === "0") expression = "";
     expression += value;
     updateDisplay();
 }
 
-// CLEAR
 function clearDisplay() {
     expression = "";
     updateDisplay();
 }
 
-// DELETE
 function deleteLast() {
     expression = expression.slice(0, -1);
     updateDisplay();
 }
 
-// DISPLAY
 function updateDisplay() {
     document.getElementById("display").innerText = expression || "0";
 }
 
 // CALCULATE
-async function calculate() {
-    let res = await fetch('/calculate', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ expression })
-    });
+function calculate() {
+    try {
+        let result = eval(expression);
 
-    let data = await res.json();
+        historyArr.push(expression + " = " + result);
 
-    if (data.status === "Rejected") {
-        document.getElementById("display").innerText = "Rejected";
-        return;
-    }
+        expression = result.toString();
+        updateDisplay();
 
-    expression = data.result.toString();
-    updateDisplay();
-
-    if (historyVisible) loadHistory();
-}
-
-// TOGGLE HISTORY
-function toggleHistory() {
-    let box = document.getElementById("historyBox");
-
-    historyVisible = !historyVisible;
-
-    if (historyVisible) {
-        box.style.display = "block";
-        loadHistory();
-    } else {
-        box.style.display = "none";
+    } catch {
+        document.getElementById("display").innerText = "Error";
     }
 }
 
-// LOAD HISTORY
-async function loadHistory() {
-    let res = await fetch('/history');
-    let data = await res.json();
-
+// SHOW HISTORY
+function showHistory() {
     let list = document.getElementById("history");
     list.innerHTML = "";
 
-    data.slice().reverse().forEach(item => {
+    historyArr.slice().reverse().forEach(item => {
         let li = document.createElement("li");
-        li.innerText = item.expression + " = " + item.result;
+        li.innerText = item;
         list.appendChild(li);
     });
 }
